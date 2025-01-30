@@ -9,12 +9,18 @@ import LiveKitClient
  */
 @objc(LiveKitPlugin)
 public class LiveKitPlugin: CAPPlugin {
-    public let room = Room()
+    public enum Event {
+        case callDidStart
+        case callDidEnd
+        case hang
+        case error(Swift.Error)
+    }
+    private let room = Room()
 
     private var cancellables = Set<AnyCancellable>()
     
+    /// A Combine publisher that clients can subscribe to for API events.
     @objc func connect(_ call: CAPPluginCall) {
-
         let url = call.getString("url") ?? ""
         let token = call.getString("token") ?? ""
         Task {
@@ -41,7 +47,14 @@ public class LiveKitPlugin: CAPPlugin {
         let muted = call.getBool("muted") ?? false
         Task {
             do {
-
+                try await room.localParticipant.setMicrophone(enabled: muted);
+                for participant in room.remoteParticipants.values {
+                    for publication in participant.audioTracks {
+                        if let track = publication.track as? RemoteAudioTrack {
+                            track.volume = muted ? 0 : 100
+                        }
+                    }
+                }
             } catch {
                 call.reject(error.localizedDescription)
             }

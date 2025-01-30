@@ -4,6 +4,8 @@ import type { LiveKitPlugin } from './definitions';
 import { Room, RoomEvent } from 'livekit-client';
 
 
+// Probably want to use the react-components instead of this for web
+// since web requires having certain UI components on the page for audio/microphone to work
 export class LiveKitWeb extends WebPlugin implements LiveKitPlugin {
   _room: Room | undefined;
 
