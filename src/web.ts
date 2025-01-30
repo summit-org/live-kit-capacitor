@@ -1,14 +1,33 @@
 import { WebPlugin } from '@capacitor/core';
 
 import type { LiveKitPlugin } from './definitions';
+import { Room, RoomEvent } from 'livekit-client';
+
 
 export class LiveKitWeb extends WebPlugin implements LiveKitPlugin {
-  async connect(options: { assistantId: string }): Promise<void> {
-    console.log('ECHO', options);
+  _room: Room | undefined;
+
+  async connect(options: { url: string, token: string }): Promise<void> {
+    const room = new Room();
+    this._room = room;
+    room.connect(options.url, options.token);
+    const onSignalConnected = () => {
+      const localP = room.localParticipant;
+
+      Promise.all([
+        localP.setMicrophoneEnabled(true),
+        localP.setCameraEnabled(false),
+        localP.setScreenShareEnabled(false),
+      ]).catch((e) => {
+        console.error(e);
+      });
+    };
+    room.on(RoomEvent.SignalConnected, onSignalConnected)
   }
   async disconnect(): Promise<void> {
-    console.log('ECHO');
+    if (this._room) {
+      this._room.disconnect();
+    }
   }
-  async configure(_options: { publicKey: string }): Promise<void> { }
   async setMuted(_options: { muted: boolean }): Promise<void> { }
 }

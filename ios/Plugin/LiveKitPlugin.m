@@ -6,6 +6,5 @@
 CAP_PLUGIN(LiveKitPlugin, "LiveKit",
            CAP_PLUGIN_METHOD(connect, CAPPluginReturnNone);
            CAP_PLUGIN_METHOD(disconnect, CAPPluginReturnNone);
-           CAP_PLUGIN_METHOD(configure, CAPPluginReturnNone);
            CAP_PLUGIN_METHOD(setMuted, CAPPluginReturnNone);
 )

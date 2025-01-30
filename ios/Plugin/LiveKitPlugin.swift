@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import Combine
+import LiveKitClient
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -8,47 +9,21 @@ import Combine
  */
 @objc(LiveKitPlugin)
 public class LiveKitPlugin: CAPPlugin {
-    private var vapi: Vapi?
-    private var cancellables = Set<AnyCancellable>()
+    public let room = Room()
 
-    @objc func configure(_ call: CAPPluginCall) {
-        let publicKey = call.getString("publicKey") ?? ""
-        vapi = Vapi(publicKey: publicKey)
-        vapi?.eventPublisher
-                    .sink { [weak self] event in
-                        switch event {
-                        case .callDidStart:
-                            self?.notifyListeners("call-start", data:[:], retainUntilConsumed: true)
-                        case .callDidEnd:
-                            self?.notifyListeners("call-end", data:[:], retainUntilConsumed: true)
-                        case .speechUpdate(let speechUpdate):
-                            if (speechUpdate.status == SpeechUpdate.Status.started) {
-                                self?.notifyListeners("speech-start", data:[:], retainUntilConsumed: true)
-                            } else {
-                                self?.notifyListeners("speech-stopped", data:[:], retainUntilConsumed: true)
-                            }
-                        case .hang:
-                            self?.notifyListeners("message", data:[:], retainUntilConsumed: true)
-                        case .functionCall:
-                            self?.notifyListeners("message", data:[:], retainUntilConsumed: true)
-                        case .conversationUpdate(let conversationUpdate):
-                            self?.notifyListeners("message", data:["type": "conversation-update", "conversation": conversationUpdate.conversation], retainUntilConsumed: true)
-                        case .metadata:
-                            self?.notifyListeners("message", data:[:], retainUntilConsumed: true)
-                        case .transcript(let transcript):
-                            self?.notifyListeners("message", data:["type": "transcript", "role": transcript.role], retainUntilConsumed: true)
-                        case .error(let error):
-                            self?.notifyListeners("error", data:[:], retainUntilConsumed: true)
-                        }
-                    }
-                    .store(in: &cancellables)
-    }
+    private var cancellables = Set<AnyCancellable>()
     
     @objc func connect(_ call: CAPPluginCall) {
-        let assistantId = call.getString("assistantId") ?? ""
+
+        let url = call.getString("url") ?? ""
+        let token = call.getString("token") ?? ""
         Task {
             do {
-                try await vapi?.start(assistantId: assistantId)
+                try await room.connect(url: url, token: token)
+                room.on
+                try await room.localParticipant.setCamera(enabled: false);
+                try await room.localParticipant.setScreenShare(enabled: false)
+                try await room.localParticipant.setMicrophone(enabled: true)
             } catch {
                 call.reject(error.localizedDescription )
             }
@@ -57,7 +32,9 @@ public class LiveKitPlugin: CAPPlugin {
     }
     
     @objc func disconnect(_ call: CAPPluginCall) {
-        vapi?.stop()
+        Task {
+            await room.disconnect()
+        }
         call.resolve()
     }
     
@@ -65,7 +42,7 @@ public class LiveKitPlugin: CAPPlugin {
         let muted = call.getBool("muted") ?? false
         Task {
             do {
-                try await vapi?.setMuted(muted)
+
             } catch {
                 call.reject(error.localizedDescription)
             }
