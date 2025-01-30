@@ -50,7 +50,7 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.32.0",
     "swiftlint": "^1.0.1",
-    "typescript": "~4.1.5"
+    "typescript": "^5.7.3"
   },
   "peerDependencies": {
     "@capacitor/core": "^6.0.0",
@@ -70,6 +70,8 @@
     }
   },
   "dependencies": {
-    "livekit-client": "^2.8.1"
+    "@livekit/protocol": "^1.32.1",
+    "livekit-client": "^2.8.1",
+    "livekit-server-sdk": "^2.9.7"
   }
 }

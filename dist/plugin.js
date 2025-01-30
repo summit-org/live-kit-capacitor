@@ -1,4 +1,4 @@
-var capacitorVapi = (function (exports, core) {
+var capacitorVapi = (function (exports, core, livekitClient) {
     'use strict';
 
     const LiveKit = core.registerPlugin('LiveKit', {
@@ -7,12 +7,26 @@ var capacitorVapi = (function (exports, core) {
 
     class LiveKitWeb extends core.WebPlugin {
         async connect(options) {
-            console.log('ECHO', options);
+            const room = new livekitClient.Room();
+            this._room = room;
+            room.connect(options.url, options.token);
+            const onSignalConnected = () => {
+                const localP = room.localParticipant;
+                Promise.all([
+                    localP.setMicrophoneEnabled(true),
+                    localP.setCameraEnabled(false),
+                    localP.setScreenShareEnabled(false),
+                ]).catch((e) => {
+                    console.error(e);
+                });
+            };
+            room.on(livekitClient.RoomEvent.SignalConnected, onSignalConnected);
         }
         async disconnect() {
-            console.log('ECHO');
+            if (this._room) {
+                this._room.disconnect();
+            }
         }
-        async configure(_options) { }
         async setMuted(_options) { }
     }
 
@@ -27,5 +41,5 @@ var capacitorVapi = (function (exports, core) {
 
     return exports;
 
-})({}, capacitorExports);
+})({}, capacitorExports, livekitClient);
 //# sourceMappingURL=plugin.js.map

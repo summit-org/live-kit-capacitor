@@ -20,7 +20,6 @@ public class LiveKitPlugin: CAPPlugin {
         Task {
             do {
                 try await room.connect(url: url, token: token)
-                room.on
                 try await room.localParticipant.setCamera(enabled: false);
                 try await room.localParticipant.setScreenShare(enabled: false)
                 try await room.localParticipant.setMicrophone(enabled: true)
