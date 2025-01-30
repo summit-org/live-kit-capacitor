@@ -51,8 +51,8 @@ public class LiveKitPlugin: CAPPlugin {
                 try await room.localParticipant.setMicrophone(enabled: muted);
                 for participant in room.remoteParticipants.values {
                     for publication in participant.audioTracks {
-                        if let track = publication.track as? RemoteAudioTrack {
-                            track.volume = muted ? 0 : 50
+                        if let track = publication as? RemoteTrackPublication {
+                            try await track.set(subscribed: !muted)
                         }
                     }
                 }
