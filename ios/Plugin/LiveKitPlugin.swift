@@ -18,6 +18,7 @@ public class LiveKitPlugin: CAPPlugin {
     private let room = Room()
 
     private var cancellables = Set<AnyCancellable>()
+    private var trackVolumeMap: [String: Double] = [:]
     
     /// A Combine publisher that clients can subscribe to for API events.
     @objc func connect(_ call: CAPPluginCall) {
@@ -51,7 +52,7 @@ public class LiveKitPlugin: CAPPlugin {
                 for participant in room.remoteParticipants.values {
                     for publication in participant.audioTracks {
                         if let track = publication.track as? RemoteAudioTrack {
-                            track.volume = muted ? 0 : 100
+                            track.volume = muted ? 0 : 50
                         }
                     }
                 }
