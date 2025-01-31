@@ -1,5 +1,7 @@
 import { WebPlugin } from '@capacitor/core';
 import { Room, RoomEvent } from 'livekit-client';
+// Probably want to use the react-components instead of this for web
+// since web requires having certain UI components on the page for audio/microphone to work
 export class LiveKitWeb extends WebPlugin {
     async connect(options) {
         const room = new Room();

@@ -5,6 +5,8 @@ var capacitorVapi = (function (exports, core, livekitClient) {
         web: () => Promise.resolve().then(function () { return web; }).then(m => new m.LiveKitWeb()),
     });
 
+    // Probably want to use the react-components instead of this for web
+    // since web requires having certain UI components on the page for audio/microphone to work
     class LiveKitWeb extends core.WebPlugin {
         async connect(options) {
             const room = new livekitClient.Room();
